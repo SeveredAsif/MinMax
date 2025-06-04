@@ -1,4 +1,6 @@
 class Cell:
-    def __init__(self, mycolor):
+    def __init__(self, mycolor=0):
          self.color = mycolor
-         self.number = 1
+         self.count = 0
+    def set_color(self,color):
+         self.color = color
