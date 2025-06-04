@@ -14,7 +14,7 @@ class Board:
     def make_move(self,player,row,col): 
          self.grid[row][col].set_color(player)
          self.grid[row][col].count += 1
-         if(self.grid[row][col].count>get_critical_mass(row,col)):
+         if(self.grid[row][col].count>=get_critical_mass(row,col)):
               self.explode(player,row,col)
     
     def explode(self,player,row,col):
@@ -42,4 +42,20 @@ class Board:
                    else:
                         print("0 ",end=" ")
               print()
+    def __str__(self):
+          color_map = {1: "R", 2: "B"}
+          board_str = ""
+          for i in range(9):
+               for j in range(6):
+                    cell = self.grid[i][j]
+                    if cell.count > 0:
+                         color_char = color_map.get(cell.color, "?")
+                         board_str += f"{cell.count}{color_char} "
+                    else:
+                         board_str += "0 "
+               board_str += "\n"
+          return board_str.strip()
+
               
+
+
