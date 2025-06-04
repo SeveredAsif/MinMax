@@ -245,10 +245,10 @@ def get_cell_from_mouse(pos):
         return None
     return y // CELL_HEIGHT, x // CELL_WIDTH
 
-# === AI Functions (Using Original Minmax) ===
+# === Optimized AI Functions ===
 
 def get_best_ai_move(board, ai_player, current_player, depth=2):
-    """AI move selection using original minmax function"""
+    """Optimized AI move selection"""
     moves = valid_moves(board, ai_player)
     if not moves:
         return None
@@ -256,7 +256,15 @@ def get_best_ai_move(board, ai_player, current_player, depth=2):
     best_value = int(1e9)
     best_move = None
     
-    for move in moves:
+    # Simple move ordering: prefer center moves
+    def move_score(move):
+        r, c = move
+        center_r, center_c = ROWS // 2, COLS // 2
+        return abs(r - center_r) + abs(c - center_c)
+    
+    sorted_moves = sorted(moves, key=move_score)
+    
+    for move in sorted_moves[:min(len(moves), 20)]:  # Limit moves for speed
         sim_board = result_board(board, move, ai_player)
         value = minmax(sim_board, depth, -int(1e9), int(1e9), current_player)
         if value < best_value:
@@ -304,52 +312,37 @@ def main():
                 cell = board.grid[row][col]
 
                 if cell.color == 0 or cell.color == current_player:
+                    # Start timing human move
+                    if game_state.human_start_time is None:
+                        game_state.human_start_time = time.time()
+                    
                     # Calculate human thinking time
                     if game_state.human_start_time:
                         game_state.human_think_time = time.time() - game_state.human_start_time
                         game_state.human_start_time = None
                     
-                    # INSTANT human move - no lag
                     board.make_move(current_player, row, col)
                     game_state.move_count += 1
                     save_board_to_file(board, "Human Move:")
-                    
-                    # Immediately redraw board after human move
-                    screen.fill(DARK_BG)
-                    draw_board(screen, board)
-                    draw_sidebar(screen, board, current_player)
-                    pygame.display.flip()
 
                     if is_terminal(board):
                         result = who_won(board)
                         winner = "You Win!" if result > 0 else "AI Wins!" if result < 0 else "Draw!"
                         show_game_over(screen, winner)
 
-                    # === AI Move with visual feedback ===
+                    # === AI Move ===
                     game_state.ai_thinking = True
-                    
-                    # Show AI thinking immediately
-                    screen.fill(DARK_BG)
-                    draw_board(screen, board)
-                    draw_sidebar(screen, board, current_player)
-                    pygame.display.flip()
-                    
                     start_time = time.time()
+                    
                     best_move = get_best_ai_move(board, ai_player, current_player, 2)
+                    
                     game_state.ai_think_time = time.time() - start_time
                     game_state.ai_thinking = False
 
                     if best_move:
-                        # INSTANT AI move - no lag
                         board.make_move(ai_player, best_move[0], best_move[1])
                         game_state.move_count += 1
                         save_board_to_file(board, "AI Move:")
-                        
-                        # Immediately redraw board after AI move
-                        screen.fill(DARK_BG)
-                        draw_board(screen, board)
-                        draw_sidebar(screen, board, current_player)
-                        pygame.display.flip()
 
                         if is_terminal(board):
                             result = who_won(board)

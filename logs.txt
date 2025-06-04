@@ -2,3 +2,4 @@
 1. 12:24 pm - 1:23 pm - 1 hr - understanding the minmax
 2. 2:54 pm - 5:33 - buggy minmax 
 3. 6:57 pm - 7:19 pm - pause 7:28 - 9:18 - frontend and almost done (too slow) 
+4. 9:18-10:34 - done 

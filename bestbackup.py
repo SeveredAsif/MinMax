@@ -245,10 +245,10 @@ def get_cell_from_mouse(pos):
         return None
     return y // CELL_HEIGHT, x // CELL_WIDTH
 
-# === AI Functions (Using Original Minmax) ===
+# === Optimized AI Functions ===
 
 def get_best_ai_move(board, ai_player, current_player, depth=2):
-    """AI move selection using original minmax function"""
+    """Optimized AI move selection"""
     moves = valid_moves(board, ai_player)
     if not moves:
         return None
@@ -256,7 +256,15 @@ def get_best_ai_move(board, ai_player, current_player, depth=2):
     best_value = int(1e9)
     best_move = None
     
-    for move in moves:
+    # Simple move ordering: prefer center moves
+    def move_score(move):
+        r, c = move
+        center_r, center_c = ROWS // 2, COLS // 2
+        return abs(r - center_r) + abs(c - center_c)
+    
+    sorted_moves = sorted(moves, key=move_score)
+    
+    for move in sorted_moves[:min(len(moves), 20)]:  # Limit moves for speed
         sim_board = result_board(board, move, ai_player)
         value = minmax(sim_board, depth, -int(1e9), int(1e9), current_player)
         if value < best_value:
