@@ -29,6 +29,16 @@ BLUE = (75, 150, 255)
 GREEN = (75, 255, 150)
 GOLD = (255, 215, 0)
 GRAY = (120, 120, 130)
+PURPLE = (150, 75, 255)
+
+# === Game Modes ===
+HUMAN_VS_AI = 0
+AI_VS_AI = 1
+
+# === Difficulty Levels ===
+EASY = 1
+MEDIUM = 2
+HARD = 3
 
 # === Game State ===
 class GameState:
@@ -41,8 +51,111 @@ class GameState:
         self.ai_thinking = False
         self.hover_cell = None
         self.animation_time = 0
+        
+        # New game settings
+        self.game_mode = HUMAN_VS_AI
+        self.difficulty = MEDIUM
+        self.human_color = colors.RED
+        self.ai_color = colors.BLUE
+        self.in_menu = True
+        self.menu_selection = 0
+        self.ai_vs_ai_delay = 1.0  # Delay between AI moves in AI vs AI mode
 
 game_state = GameState()
+
+# === Menu Functions ===
+
+def draw_menu(screen):
+    screen.fill(DARK_BG)
+    
+    font_large = pygame.font.Font(None, 48)
+    font_medium = pygame.font.Font(None, 32)
+    font_small = pygame.font.Font(None, 24)
+    
+    # Title
+    title = font_large.render("Chain Reaction", True, GOLD)
+    title_rect = title.get_rect(center=(WIDTH // 2, 80))
+    screen.blit(title, title_rect)
+    
+    # Menu options
+    menu_y = 180
+    menu_spacing = 60
+    
+    # Game Mode
+    mode_text = "Game Mode: " + ("Human vs AI" if game_state.game_mode == HUMAN_VS_AI else "AI vs AI")
+    mode_color = WHITE if game_state.menu_selection == 0 else GRAY
+    mode_surface = font_medium.render(mode_text, True, mode_color)
+    mode_rect = mode_surface.get_rect(center=(WIDTH // 2, menu_y))
+    screen.blit(mode_surface, mode_rect)
+    
+    # Difficulty
+    diff_names = {EASY: "Easy", MEDIUM: "Medium", HARD: "Hard"}
+    diff_text = f"Difficulty: {diff_names[game_state.difficulty]}"
+    diff_color = WHITE if game_state.menu_selection == 1 else GRAY
+    diff_surface = font_medium.render(diff_text, True, diff_color)
+    diff_rect = diff_surface.get_rect(center=(WIDTH // 2, menu_y + menu_spacing))
+    screen.blit(diff_surface, diff_rect)
+    
+    # Human Color (only show in Human vs AI mode)
+    if game_state.game_mode == HUMAN_VS_AI:
+        color_text = "Your Color: " + ("Red" if game_state.human_color == colors.RED else "Blue")
+        color_color = WHITE if game_state.menu_selection == 2 else GRAY
+        color_surface = font_medium.render(color_text, True, color_color)
+        color_rect = color_surface.get_rect(center=(WIDTH // 2, menu_y + menu_spacing * 2))
+        screen.blit(color_surface, color_rect)
+        
+        start_option = 3
+    else:
+        start_option = 2
+    
+    # Start Game
+    start_text = "Start Game"
+    start_color = GREEN if game_state.menu_selection == start_option else GRAY
+    start_surface = font_medium.render(start_text, True, start_color)
+    start_rect = start_surface.get_rect(center=(WIDTH // 2, menu_y + menu_spacing * (start_option)))
+    screen.blit(start_surface, start_rect)
+    
+    # Instructions
+    instructions = [
+        "Use Arrow Keys to navigate",
+        "Press Enter to select/change",
+        "Red player always goes first"
+    ]
+    
+    inst_y = HEIGHT - 120
+    for instruction in instructions:
+        inst_surface = font_small.render(instruction, True, GRAY)
+        inst_rect = inst_surface.get_rect(center=(WIDTH // 2, inst_y))
+        screen.blit(inst_surface, inst_rect)
+        inst_y += 25
+
+def handle_menu_input(event):
+    if event.type == pygame.KEYDOWN:
+        max_options = 4 if game_state.game_mode == HUMAN_VS_AI else 3
+        
+        if event.key == pygame.K_UP:
+            game_state.menu_selection = (game_state.menu_selection - 1) % max_options
+        elif event.key == pygame.K_DOWN:
+            game_state.menu_selection = (game_state.menu_selection + 1) % max_options
+        elif event.key == pygame.K_RETURN:
+            if game_state.menu_selection == 0:  # Game Mode
+                game_state.game_mode = AI_VS_AI if game_state.game_mode == HUMAN_VS_AI else HUMAN_VS_AI
+                game_state.menu_selection = 0  # Reset selection when switching modes
+            elif game_state.menu_selection == 1:  # Difficulty
+                if game_state.difficulty == EASY:
+                    game_state.difficulty = MEDIUM
+                elif game_state.difficulty == MEDIUM:
+                    game_state.difficulty = HARD
+                else:
+                    game_state.difficulty = EASY
+            elif game_state.menu_selection == 2 and game_state.game_mode == HUMAN_VS_AI:  # Human Color
+                game_state.human_color = colors.BLUE if game_state.human_color == colors.RED else colors.RED
+                game_state.ai_color = colors.RED if game_state.human_color == colors.BLUE else colors.BLUE
+            else:  # Start Game
+                game_state.in_menu = False
+                game_state.game_start_time = time.time()
+                if game_state.game_mode == HUMAN_VS_AI and game_state.human_color == colors.RED:
+                    game_state.human_start_time = time.time()
 
 # === Drawing Functions ===
 
@@ -144,9 +257,33 @@ def draw_sidebar(screen, board, current_player):
     screen.blit(title, (GAME_WIDTH + 10, y_offset))
     y_offset += 50
     
+    # Game mode info
+    if game_state.game_mode == HUMAN_VS_AI:
+        mode_text = "Human vs AI"
+    else:
+        mode_text = "AI vs AI"
+    
+    mode_surface = font_small.render(mode_text, True, GRAY)
+    screen.blit(mode_surface, (GAME_WIDTH + 10, y_offset))
+    y_offset += 25
+    
+    # Difficulty info
+    diff_names = {EASY: "Easy", MEDIUM: "Medium", HARD: "Hard"}
+    diff_text = f"Difficulty: {diff_names[game_state.difficulty]}"
+    diff_surface = font_small.render(diff_text, True, GRAY)
+    screen.blit(diff_surface, (GAME_WIDTH + 10, y_offset))
+    y_offset += 30
+    
     # Current player indicator
     player_color = RED if current_player == colors.RED else BLUE
-    player_name = "Your Turn" if current_player == colors.RED else "AI Turn"
+    
+    if game_state.game_mode == HUMAN_VS_AI:
+        if current_player == game_state.human_color:
+            player_name = "Your Turn"
+        else:
+            player_name = "AI Turn"
+    else:
+        player_name = "Red AI" if current_player == colors.RED else "Blue AI"
     
     # Draw player indicator with glow
     pygame.draw.circle(screen, player_color, (GAME_WIDTH + 30, y_offset + 10), 12)
@@ -194,11 +331,18 @@ def draw_sidebar(screen, board, current_player):
     
     # Instructions at bottom
     y_offset = HEIGHT - 100
-    instructions = [
-        "Click to place orb",
-        "Chain reactions win!",
-        "Red vs Blue"
-    ]
+    if game_state.game_mode == HUMAN_VS_AI:
+        instructions = [
+            "Click to place orb",
+            "Chain reactions win!",
+            "ESC for menu"
+        ]
+    else:
+        instructions = [
+            "Watch AI battle!",
+            "Chain reactions win!",
+            "ESC for menu"
+        ]
     
     for instruction in instructions:
         text = font_small.render(instruction, True, GRAY)
@@ -230,14 +374,23 @@ def show_game_over(screen, message):
     screen.blit(stats, stats_rect)
     
     # Continue instruction
-    continue_text = font_small.render("Game will exit in 3 seconds...", True, GRAY)
+    continue_text = font_small.render("Press ESC for menu or close window", True, GRAY)
     continue_rect = continue_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
     screen.blit(continue_text, continue_rect)
     
     pygame.display.flip()
-    pygame.time.wait(3000)
-    pygame.quit()
-    sys.exit()
+    
+    # Wait for input
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    game_state.in_menu = True
+                    waiting = False
 
 def get_cell_from_mouse(pos):
     x, y = pos
@@ -245,117 +398,212 @@ def get_cell_from_mouse(pos):
         return None
     return y // CELL_HEIGHT, x // CELL_WIDTH
 
-# === Optimized AI Functions ===
+# === AI Functions (Enhanced) ===
 
 def get_best_ai_move(board, ai_player, current_player, depth=2):
-    """Optimized AI move selection"""
+    """AI move selection using enhanced minmax function"""
     moves = valid_moves(board, ai_player)
     if not moves:
         return None
     
-    best_value = int(1e9)
+    # Initialize best value based on whether AI is RED or BLUE
+    if ai_player == colors.RED:
+        best_value = -int(1e9)  # RED wants to maximize
+    else:
+        best_value = int(1e9)   # BLUE wants to minimize
+    
     best_move = None
     
-    # Simple move ordering: prefer center moves
-    def move_score(move):
-        r, c = move
-        center_r, center_c = ROWS // 2, COLS // 2
-        return abs(r - center_r) + abs(c - center_c)
-    
-    sorted_moves = sorted(moves, key=move_score)
-    
-    for move in sorted_moves[:min(len(moves), 20)]:  # Limit moves for speed
-        sim_board = result_board(board, move, ai_player)
-        value = minmax(sim_board, depth, -int(1e9), int(1e9), current_player)
-        if value < best_value:
-            best_value = value
-            best_move = move
+    # Determine opponent player for minmax call
+    opponent_player = colors.BLUE if ai_player == colors.RED else colors.RED
+    for move in moves:
+        undo_info = make_move_with_undo_information(board, move, ai_player)
+        value = minmax(board, depth, -int(1e9), int(1e9), opponent_player)
+        undo_move(board, undo_info)
+        
+        # Select best move based on AI color
+        if ai_player == colors.RED:
+            if value > best_value:  # RED maximizes
+                best_value = value
+                best_move = move
+        else:
+            if value < best_value:  # BLUE minimizes
+                best_value = value
+                best_move = move
     
     return best_move
+
+def make_ai_move(board, ai_player, current_player, depth, screen):
+    """Make an AI move and return if game should continue"""
+    game_state.ai_thinking = True
+    
+    # Show AI thinking immediately
+    screen.fill(DARK_BG)
+    draw_board(screen, board)
+    draw_sidebar(screen, board, current_player)
+    pygame.display.flip()
+    
+    start_time = time.time()
+    best_move = get_best_ai_move(board, ai_player, current_player, depth)
+    game_state.ai_think_time = time.time() - start_time
+    game_state.ai_thinking = False
+    
+    if best_move:
+        logged = [[False for _ in range(6)] for _ in range(9)]
+        memory = [[]]
+        board.make_move(ai_player, best_move[0], best_move[1], logged, memory)
+        game_state.move_count += 1
+        
+        ai_name = "Red AI" if ai_player == colors.RED else "Blue AI"
+        save_board_to_file(board, f"{ai_name} Move:")
+        
+        # Show board after AI move
+        screen.fill(DARK_BG)
+        draw_board(screen, board)
+        draw_sidebar(screen, board, current_player)
+        pygame.display.flip()
+        
+        return not is_terminal(board)
+    
+    return False
 
 # === Main Game Loop ===
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Chain Reaction - Beautiful Edition")
+    pygame.display.set_caption("Chain Reaction - Enhanced Edition")
     clock = pygame.time.Clock()
 
     board = Board.Board()
-    current_player = colors.RED  # Human is RED
-    ai_player = colors.BLUE
+    current_player = colors.RED  # RED always goes first
+    last_ai_move_time = 0
 
     while True:
         dt = clock.tick(FPS) / 1000.0
         game_state.animation_time += dt
         
-        # Handle mouse hover
-        mouse_pos = pygame.mouse.get_pos()
-        if mouse_pos[0] < GAME_WIDTH:
-            hover_result = get_cell_from_mouse(mouse_pos)
-            game_state.hover_cell = hover_result
-        else:
-            game_state.hover_cell = None
+        # Handle mouse hover (only when not in menu)
+        if not game_state.in_menu:
+            mouse_pos = pygame.mouse.get_pos()
+            if mouse_pos[0] < GAME_WIDTH:
+                hover_result = get_cell_from_mouse(mouse_pos)
+                game_state.hover_cell = hover_result
+            else:
+                game_state.hover_cell = None
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                save_board_to_file(board, "Game interrupted")
+                if not game_state.in_menu:
+                    save_board_to_file(board, "Game interrupted")
                 pygame.quit()
                 sys.exit()
-
+            
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    if not game_state.in_menu:
+                        game_state.in_menu = True
+                        # Reset game state
+                        board = Board.Board()
+                        current_player = colors.RED
+                        game_state.move_count = 0
+                        game_state.human_think_time = 0
+                        game_state.ai_think_time = 0
+                        game_state.ai_thinking = False
+                        game_state.hover_cell = None
+            
+            # Handle menu input
+            if game_state.in_menu:
+                handle_menu_input(event)
+            
+            # Handle game input
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                cell_pos = get_cell_from_mouse(event.pos)
-                if cell_pos is None:  # Clicked in sidebar
-                    continue
-                    
-                row, col = cell_pos
-                cell = board.grid[row][col]
+                if game_state.game_mode == HUMAN_VS_AI and current_player == game_state.human_color:
+                    cell_pos = get_cell_from_mouse(event.pos)
+                    if cell_pos is None:  # Clicked in sidebar
+                        continue
+                        
+                    row, col = cell_pos
+                    cell = board.grid[row][col]
 
-                if cell.color == 0 or cell.color == current_player:
-                    # Start timing human move
-                    if game_state.human_start_time is None:
-                        game_state.human_start_time = time.time()
-                    
-                    # Calculate human thinking time
-                    if game_state.human_start_time:
-                        game_state.human_think_time = time.time() - game_state.human_start_time
-                        game_state.human_start_time = None
-                    
-                    board.make_move(current_player, row, col)
-                    game_state.move_count += 1
-                    save_board_to_file(board, "Human Move:")
-
-                    if is_terminal(board):
-                        result = who_won(board)
-                        winner = "You Win!" if result > 0 else "AI Wins!" if result < 0 else "Draw!"
-                        show_game_over(screen, winner)
-
-                    # === AI Move ===
-                    game_state.ai_thinking = True
-                    start_time = time.time()
-                    
-                    best_move = get_best_ai_move(board, ai_player, current_player, 2)
-                    
-                    game_state.ai_think_time = time.time() - start_time
-                    game_state.ai_thinking = False
-
-                    if best_move:
-                        board.make_move(ai_player, best_move[0], best_move[1])
+                    if cell.color == 0 or cell.color == current_player:
+                        # Calculate human thinking time
+                        if game_state.human_start_time:
+                            game_state.human_think_time = time.time() - game_state.human_start_time
+                            game_state.human_start_time = None
+                        
+                        # Make human move
+                        logged = [[False for _ in range(6)] for _ in range(9)]
+                        memory = [[]]
+                        board.make_move(current_player, row, col, logged, memory)
                         game_state.move_count += 1
-                        save_board_to_file(board, "AI Move:")
-
+                        save_board_to_file(board, "Human Move:")
+                        
+                        # Immediately show board after human move
+                        screen.fill(DARK_BG)
+                        draw_board(screen, board)
+                        draw_sidebar(screen, board, current_player)
+                        pygame.display.flip()
+                        
+                        # Check for game over
                         if is_terminal(board):
                             result = who_won(board)
-                            winner = "You Win!" if result > 0 else "AI Wins!" if result < 0 else "Draw!"
+                            if result > 0:
+                                winner = "Red Wins!"
+                            elif result < 0:
+                                winner = "Blue Wins!"
+                            else:
+                                winner = "Draw!"
                             show_game_over(screen, winner)
-                    
-                    # Reset human timer for next move
+                        else:
+                            # Switch to AI turn
+                            current_player = colors.BLUE if current_player == colors.RED else colors.RED
+
+        # Handle AI moves
+        if not game_state.in_menu and not game_state.ai_thinking:
+            if game_state.game_mode == AI_VS_AI:
+                # AI vs AI mode
+                current_time = time.time()
+                if current_time - last_ai_move_time >= game_state.ai_vs_ai_delay:
+                    if not is_terminal(board):
+                        if make_ai_move(board, current_player, current_player, game_state.difficulty, screen):
+                            current_player = colors.BLUE if current_player == colors.RED else colors.RED
+                            last_ai_move_time = current_time
+                        else:
+                            # Game over
+                            result = who_won(board)
+                            if result > 0:
+                                winner = "Red AI Wins!"
+                            elif result < 0:
+                                winner = "Blue AI Wins!"
+                            else:
+                                winner = "Draw!"
+                            show_game_over(screen, winner)
+            
+            elif game_state.game_mode == HUMAN_VS_AI and current_player == game_state.ai_color:
+                # Human vs AI mode - AI turn
+                if make_ai_move(board, game_state.ai_color, current_player, game_state.difficulty, screen):
+                    current_player = game_state.human_color
                     game_state.human_start_time = time.time()
+                else:
+                    # Game over
+                    result = who_won(board)
+                    if result > 0:
+                        winner = "Red Wins!"
+                    elif result < 0:
+                        winner = "Blue Wins!"
+                    else:
+                        winner = "Draw!"
+                    show_game_over(screen, winner)
 
         # Draw everything
-        screen.fill(DARK_BG)
-        draw_board(screen, board)
-        draw_sidebar(screen, board, current_player)
+        if game_state.in_menu:
+            draw_menu(screen)
+        else:
+            screen.fill(DARK_BG)
+            draw_board(screen, board)
+            draw_sidebar(screen, board, current_player)
+        
         pygame.display.flip()
 
 if __name__ == "__main__":
