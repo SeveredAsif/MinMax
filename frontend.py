@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 import sys
 import time
 import math
@@ -257,8 +257,10 @@ def get_best_ai_move(board, ai_player, current_player, depth=2):
     best_move = None
     
     for move in moves:
-        sim_board = result_board(board, move, ai_player)
-        value = minmax(sim_board, depth, -int(1e9), int(1e9), current_player)
+        undo_info = make_move_with_undo_information(board,move,ai_player)
+        #sim_board = result_board(board, move, ai_player)
+        value = minmax(board, 2, -int(1e9), int(1e9), current_player)
+        undo_move(board,undo_info)
         if value < best_value:
             best_value = value
             best_move = move
@@ -310,7 +312,9 @@ def main():
                         game_state.human_start_time = None
                     
                     # INSTANT human move - no lag
-                    board.make_move(current_player, row, col)
+                    logged = [[False for _ in range(6)] for _ in range(9)]
+                    memory = [[]]
+                    board.make_move(current_player, row, col,logged,memory)
                     game_state.move_count += 1
                     save_board_to_file(board, "Human Move:")
                     
@@ -341,7 +345,9 @@ def main():
 
                     if best_move:
                         # INSTANT AI move - no lag
-                        board.make_move(ai_player, best_move[0], best_move[1])
+                        logged = [[False for _ in range(6)] for _ in range(9)]
+                        memory = [[]]
+                        board.make_move(ai_player, best_move[0], best_move[1],logged,memory)
                         game_state.move_count += 1
                         save_board_to_file(board, "AI Move:")
                         

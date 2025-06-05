@@ -11,13 +11,16 @@ class Board:
     def __init__(self):
          self.grid = [[cell.Cell() for _ in range(6)] for _ in range (9)]
 
-    def make_move(self,player,row,col): 
+    def make_move(self,player,row,col,logged:list[list[int]],memory:list[list[int]]): 
+         if(logged[row][col]==False):
+              logged[row][col] = True
+              memory.append([row,col,self.grid[row][col].color,self.grid[row][col].count]) 
          self.grid[row][col].set_color(player)
          self.grid[row][col].count += 1
          if(self.grid[row][col].count>=get_critical_mass(row,col)):
-              self.explode(player,row,col)
+              self.explode(player,row,col,logged,memory)
     
-    def explode(self,player,row,col):
+    def explode(self,player,row,col,logged,memory):
           neighbourRows = []
           neighbourColumns = []
           if(row-1>=0): neighbourRows.append(row-1)
@@ -26,10 +29,16 @@ class Board:
           if(col+1<6): neighbourColumns.append(col+1)
           self.grid[row][col].color = 0
           self.grid[row][col].count = 0
-          for roww in neighbourRows:
-               self.make_move(player,roww,col)
-          for coll in neighbourColumns:
-               self.make_move(player,row,coll)
+          for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]:
+               nx, ny = row + dx, col + dy
+               if 0 <= nx < 9 and 0 <= ny < 6:
+                    self.make_move(player, nx, ny, logged, memory)
+
+          # for roww in neighbourRows:
+          #      self.make_move(player,roww,col,logged,memory)
+          # for coll in neighbourColumns:
+          #      self.make_move(player,row,coll,logged,memory)
+               
 
 
     def print_board(self):

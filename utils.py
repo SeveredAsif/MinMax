@@ -1,8 +1,30 @@
 import copy
 import Board
 import colors
+
+def custom_copy(state:Board.Board):
+    b = Board.Board()
+    for i in range(9):
+        for j in range(6):
+            b.grid[i][j].color = state.grid[i][j].color
+            b.grid[i][j].count = state.grid[i][j].color
+    return b 
+def make_move_with_undo_information(state:Board.Board,valid_moves:list[int],maximizing_player):
+    logged = [[False for _ in range(6)] for _ in range(9)]
+    undo_info = []
+    i,j = valid_moves
+    state.make_move(maximizing_player,i,j,logged,undo_info)
+    return undo_info
+
+
+def undo_move(state:Board.Board,undo_info:list[list[int]]):
+    for info in undo_info:
+        i,j,color,count = info 
+        state.grid[i][j].color = color
+        state.grid[i][j].count = count
+    
 def result_board(state:Board.Board,valid_moves:list[int],maximizing_player):
-    deep_copied_board = copy.deepcopy(state)
+    deep_copied_board = custom_copy(state)
     i,j = valid_moves
     deep_copied_board.make_move(maximizing_player,i,j)
     #deep_copied_board.print_board()

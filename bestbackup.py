@@ -1,4 +1,4 @@
-import pygame
+import pygame # type: ignore
 import sys
 import time
 import math

@@ -17,7 +17,9 @@ def minmax(state, depth,alpha,beta ,maximizing_player):
         valid_movess = valid_moves(state,maximizing_player)
         #print(f"valid moves: {len(valid_movess)} for RED")
         for action in valid_movess:
-            eval = minmax(result_board(state, action,maximizing_player), depth - 1, alpha,beta ,colors.BLUE)
+            undo_info = make_move_with_undo_information(state,action,maximizing_player)
+            eval = minmax(state, depth - 1, alpha,beta ,colors.BLUE)
+            undo_move(state,undo_info)
             max_eval = max(max_eval, eval)
             alpha = max(alpha, eval)
             if beta <= alpha:
@@ -29,7 +31,10 @@ def minmax(state, depth,alpha,beta ,maximizing_player):
         valid_movess = valid_moves(state,colors.BLUE)
         #print(f"valid moves: {len(valid_movess)} for BLUE")
         for action in valid_movess:
-            eval = minmax(result_board(state, action,colors.BLUE), depth - 1, alpha,beta,colors.RED)
+            undo_info = make_move_with_undo_information(state,action,colors.BLUE)
+            eval = minmax(state, depth - 1, alpha,beta ,colors.RED)
+            undo_move(state,undo_info)
+            #eval = minmax(result_board(state, action,colors.BLUE), depth - 1, alpha,beta,colors.RED)
             min_eval = min(min_eval, eval)
             beta = min(beta, eval)
             if beta <= alpha:
