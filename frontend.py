@@ -324,7 +324,7 @@ def main():
                     draw_sidebar(screen, board, current_player)
                     pygame.display.flip()
 
-                    if is_terminal(board):
+                    if board.is_terminal():
                         result = who_won(board)
                         winner = "You Win!" if result > 0 else "AI Wins!" if result < 0 else "Draw!"
                         show_game_over(screen, winner)
@@ -357,7 +357,7 @@ def main():
                         draw_sidebar(screen, board, current_player)
                         pygame.display.flip()
 
-                        if is_terminal(board):
+                        if board.is_terminal():
                             result = who_won(board)
                             winner = "You Win!" if result > 0 else "AI Wins!" if result < 0 else "Draw!"
                             show_game_over(screen, winner)

@@ -19,9 +19,12 @@ def make_move_with_undo_information(state:Board.Board,valid_moves:list[int],maxi
 
 def undo_move(state:Board.Board,undo_info:list[list[int]]):
     for info in undo_info:
-        i,j,color,count = info 
+        i,j,color,count,red_count,blue_count = info 
         state.grid[i][j].color = color
         state.grid[i][j].count = count
+        state.color_array[0] = red_count
+        state.color_array[1] = blue_count
+        #print(f"red:{state.color_array[0]},blue:{state.color_array[1]}")
     
 def result_board(state:Board.Board,valid_moves:list[int],maximizing_player):
     deep_copied_board = custom_copy(state)
@@ -69,7 +72,7 @@ def who_won(state:Board.Board)->int:
                 has_Blue=True
             if(has_Red==True and has_Blue==True):
                 #board filled but no one dominant color
-                #print("draw!")
+                print("draw!")
                 return 0
     if(has_Red==True):
         #red won, +INF
@@ -84,14 +87,14 @@ def who_won(state:Board.Board)->int:
 
 
 #3:03 pm-3:35pm 
-def is_terminal(state:Board.Board)->bool:
-    red_count = 0
-    blue_count = 0
-    for rows in state.grid:
-        for cell in rows:
-            if(cell.color==colors.BLUE):
-                blue_count += cell.count
-            elif(cell.color==colors.RED):
-                red_count += cell.count
+# def is_terminal(state:Board.Board)->bool:
+#     red_count = 0
+#     blue_count = 0
+#     for rows in state.grid:
+#         for cell in rows:
+#             if(cell.color==colors.BLUE):
+#                 blue_count += cell.count
+#             elif(cell.color==colors.RED):
+#                 red_count += cell.count
 
-    return (red_count == 0 and blue_count > 1) or (blue_count == 0 and red_count > 1)
+#     return (red_count == 0 and blue_count > 1) or (blue_count == 0 and red_count > 1)

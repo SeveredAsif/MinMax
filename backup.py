@@ -354,6 +354,7 @@ def save_board_to_file(board, label="Move"):
         f.write(f"{label}\n{str(board)}\n")
 
 def show_game_over(screen, message):
+
     # Create overlay
     overlay = pygame.Surface((WIDTH, HEIGHT))
     overlay.set_alpha(180)
@@ -463,7 +464,7 @@ def make_ai_move(board, ai_player, current_player, depth, screen):
         draw_sidebar(screen, board, current_player)
         pygame.display.flip()
         
-        return not is_terminal(board)
+        return not board.is_terminal()
     
     return False
 
@@ -546,14 +547,24 @@ def main():
                         pygame.display.flip()
                         
                         # Check for game over
-                        if is_terminal(board):
+                        if board.is_terminal():
                             result = who_won(board)
+                            screen.fill(DARK_BG)
+                            draw_board(screen, board)
+                            draw_sidebar(screen, board, current_player)
+                            pygame.display.flip()
                             if result > 0:
                                 winner = "Red Wins!"
                             elif result < 0:
                                 winner = "Blue Wins!"
                             else:
                                 winner = "Draw!"
+                            # Redraw the final board and wait
+                            screen.fill(DARK_BG)
+                            draw_board(screen, board)  # You'd need to pass board as parameter
+                            draw_sidebar(screen, board, current_player)  # Pass current_player too
+                            pygame.display.flip()
+                            pygame.time.wait(3000)
                             show_game_over(screen, winner)
                         else:
                             # Switch to AI turn
@@ -565,7 +576,7 @@ def main():
                 # AI vs AI mode
                 current_time = time.time()
                 if current_time - last_ai_move_time >= game_state.ai_vs_ai_delay:
-                    if not is_terminal(board):
+                    if not board.is_terminal():
                         if make_ai_move(board, current_player, current_player, game_state.difficulty, screen):
                             current_player = colors.BLUE if current_player == colors.RED else colors.RED
                             last_ai_move_time = current_time
@@ -578,6 +589,12 @@ def main():
                                 winner = "Blue AI Wins!"
                             else:
                                 winner = "Draw!"
+                            # Redraw the final board and wait
+                            screen.fill(DARK_BG)
+                            draw_board(screen, board)  # You'd need to pass board as parameter
+                            draw_sidebar(screen, board, current_player)  # Pass current_player too
+                            pygame.display.flip()
+                            pygame.time.wait(3000)
                             show_game_over(screen, winner)
             
             elif game_state.game_mode == HUMAN_VS_AI and current_player == game_state.ai_color:
@@ -594,6 +611,12 @@ def main():
                         winner = "Blue Wins!"
                     else:
                         winner = "Draw!"
+                            # Redraw the final board and wait
+                    screen.fill(DARK_BG)
+                    draw_board(screen, board)  # You'd need to pass board as parameter
+                    draw_sidebar(screen, board, current_player)  # Pass current_player too
+                    pygame.display.flip()
+                    pygame.time.wait(3000)
                     show_game_over(screen, winner)
 
         # Draw everything

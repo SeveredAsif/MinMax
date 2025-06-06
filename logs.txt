@@ -6,3 +6,9 @@
 
 05 June 2025
 1. 7:01 pm - 7:34 pm  - pause ; 7:49 pm - 8:39 pm - made moves using undo, now 2 depth works smooth 
+2. 9:20 somewhat - 10:50 - enhanced menu
+3. 11:05 pm - 12:24 am - okay but 4 orbs come --bug 
+4. 1:37 am - 3:09 am - couldn't remove infinite recursion/circular queue 
+
+6 June 2025
+1. 7:02 pm - 9:05 pm - infinite recursion fixed with isterminal (have to remove the total)

@@ -7,7 +7,7 @@ from utils import *
 def minmax(state, depth,alpha,beta ,maximizing_player):
     #print(f"depth: {depth}, player: {maximizing_player}")
     #is_terminal -- all colors are red, or all colors are blue. what if it is the first move and only color is red, will it be a terminal?
-    if is_terminal(state):
+    if state.is_terminal():
         return who_won(state) #returns 0 if nobody won in a certain depth
     if(depth==0):
         return heuristic(state,maximizing_player)
