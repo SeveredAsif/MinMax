@@ -2,19 +2,19 @@ import cell
 import colors
 
 
-def get_critical_mass(row, col):
-    if (row in [0, 8]) and (col in [0, 5]):
-        return 2  # corner
-    elif (row in [0, 8]) or (col in [0, 5]):
-        return 3  # edge
-    else:
-        return 4  # inner cell
-
 
 class Board:
     def __init__(self):
          self.grid = [[cell.Cell() for _ in range(6)] for _ in range (9)]
-         self.color_array = [0,0]
+     #     self.color_array = [0,0]
+         self.game_start = True
+    def get_critical_mass(self, row, col):
+     if (row in [0, 8]) and (col in [0, 5]):
+          return 2  # corner
+     elif (row in [0, 8]) or (col in [0, 5]):
+          return 3  # edge
+     else:
+          return 4  # inner cell
     def is_terminal(self)->bool:
      red_count = 0
      blue_count = 0
@@ -32,25 +32,25 @@ class Board:
      #      return
          if(logged[row][col]==False):
               logged[row][col] = True
-              memory.append([row,col,self.grid[row][col].color,self.grid[row][col].count,self.color_array[0],self.color_array[1]]) 
+              memory.append([row,col,self.grid[row][col].color,self.grid[row][col].count]) 
 
-         old_color = self.grid[row][col].color
-         old_count = self.grid[row][col].count
+     #     old_color = self.grid[row][col].color
+     #     old_count = self.grid[row][col].count
 
-         # Only subtract if the cell had a color
-         if old_color != 0:
-          self.color_array[old_color - 1] -= old_count
+     #     # Only subtract if the cell had a color
+     #     if old_color != 0:
+     #      self.color_array[old_color - 1] -= old_count
           # if(self.color_array[old_color - 1]<0):
           #      print(f"I found negative in make move!")
 
 
          self.grid[row][col].count += 1
          self.grid[row][col].set_color(player)
-         self.color_array[player - 1] += self.grid[row][col].count
+         #self.color_array[player - 1] += self.grid[row][col].count
 
 
          #self.color_array[self.grid[row][col].color-1] += self.grid[row][col].count
-         if(self.grid[row][col].count>=get_critical_mass(row,col) ): #and explosion[row][col]==False
+         if(self.grid[row][col].count>=self.get_critical_mass(row,col) ): #and explosion[row][col]==False
           #     explosion[row][col]=True
           #     self.grid[row][col].count = 0
           #     self.grid[row][col].color = 0
@@ -62,10 +62,10 @@ class Board:
     def explode(self,player,row,col,logged,memory):
           if(self.is_terminal()):
                return 
-          old_color = self.grid[row][col].color
-          old_count = self.grid[row][col].count
-          if old_color != 0:
-               self.color_array[old_color - 1] -= old_count
+          # old_color = self.grid[row][col].color
+          # old_count = self.grid[row][col].count
+          # if old_color != 0:
+          #      self.color_array[old_color - 1] -= old_count
                # if(self.color_array[old_color - 1]<0):
                #      print(f"I found negative in explosion!")
 

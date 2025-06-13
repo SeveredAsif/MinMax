@@ -432,6 +432,8 @@ def get_best_ai_move(board, ai_player, current_player, depth=2):
                 best_value = value
                 best_move = move
     
+    if(best_move==None):
+        return moves[0]
     return best_move
 
 def make_ai_move(board, ai_player, current_player, depth, screen):
@@ -465,8 +467,12 @@ def make_ai_move(board, ai_player, current_player, depth, screen):
         pygame.display.flip()
         
         return not board.is_terminal()
+    # if(board.game_start==True):
+    #     board.game_start=False
+    #     return True
     
-    return False
+    print("No moves found!")
+    return not board.is_terminal()
 
 # === Main Game Loop ===
 

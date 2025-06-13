@@ -19,11 +19,11 @@ def make_move_with_undo_information(state:Board.Board,valid_moves:list[int],maxi
 
 def undo_move(state:Board.Board,undo_info:list[list[int]]):
     for info in undo_info:
-        i,j,color,count,red_count,blue_count = info 
+        i,j,color,count = info 
         state.grid[i][j].color = color
         state.grid[i][j].count = count
-        state.color_array[0] = red_count
-        state.color_array[1] = blue_count
+        # state.color_array[0] = red_count
+        # state.color_array[1] = blue_count
         #print(f"red:{state.color_array[0]},blue:{state.color_array[1]}")
     
 def result_board(state:Board.Board,valid_moves:list[int],maximizing_player):
@@ -44,10 +44,77 @@ def heuristic(state:Board.Board,player):
             elif(cell.color==colors.BLUE):
                 count -= 1
     #print(f"heuristic: {count}")
-    if (player==colors.RED):
-        return count
+    # if (player==colors.RED):
+    #     return count
     
-    return -count 
+    return count 
+
+def heuristic_orb_count_diff(state:Board.Board,player):
+    score = 0
+    for row in state.grid:
+        for cell in row:
+            if cell.color == player:
+                score += cell.count
+            elif cell.color != 0:
+                score -= cell.count
+    if (player==colors.RED):
+        return score
+    
+    return -score 
+
+def heuristic_edge_corner_control(state:Board.Board,player):
+    score = 0
+    for i in range(9):
+        for j in range(6):
+            cell = state.grid[i][j]
+            if cell.color == player:
+                if (i in [0, 8]) and (j in [0, 5]):
+                    score += 3  # corner
+                elif i in [0, 8] or j in [0, 5]:
+                    score += 2  # edge
+                else:
+                    score += 1  # center
+    
+    if (player==colors.RED):
+        return score    
+    return -score
+
+def heuristic_vulnerability(state:Board.Board,player):
+    penalty = 0
+    for i in range(9):
+        for j in range(6):
+            cell = state.grid[i][j]
+            if cell.color == player and cell.count >= state.get_critical_mass(i, j) - 1:
+                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    ni, nj = i + dx, j + dy
+                    if 0 <= ni < 9 and 0 <= nj < 6:
+                        neighbor = state.grid[ni][nj]
+                        if neighbor.color != 0 and neighbor.color != player:
+                            penalty -= 2
+    if (player==colors.RED):
+        return penalty
+    
+    return -penalty 
+
+def heuristic_chain_reaction_opportunity(state:Board.Board,player):
+    reward = 0
+    for i in range(9):
+        for j in range(6):
+            cell = state.grid[i][j]
+            if cell.color == player:
+                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    ni, nj = i + dx, j + dy
+                    if 0 <= ni < 9 and 0 <= nj < 6:
+                        neighbor = state.grid[ni][nj]
+                        if neighbor.color != 0 and neighbor.color != player:
+                            if neighbor.count == state.get_critical_mass(ni, nj) - 1:
+                                reward += 3
+    if (player==colors.RED):
+        return reward
+    
+    return -reward 
+
+
 
 def valid_moves(state:Board.Board,player):
     valid_moves = []
@@ -70,10 +137,10 @@ def who_won(state:Board.Board)->int:
                 has_Red = True
             elif(cell.color==colors.BLUE):
                 has_Blue=True
-            if(has_Red==True and has_Blue==True):
-                #board filled but no one dominant color
-                print("draw!")
-                return 0
+                if(has_Red==True and has_Blue==True):
+                 #board filled but no one dominant color
+                 print("draw!")
+                 return 0
     if(has_Red==True):
         #red won, +INF
         #print("red won!")

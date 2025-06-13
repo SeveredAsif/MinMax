@@ -10,7 +10,7 @@ def minmax(state, depth,alpha,beta ,maximizing_player):
     if state.is_terminal():
         return who_won(state) #returns 0 if nobody won in a certain depth
     if(depth==0):
-        return heuristic(state,maximizing_player)
+        return heuristic_chain_reaction_opportunity(state,maximizing_player)
     
     if maximizing_player==colors.RED:
         max_eval = -int(1e9)

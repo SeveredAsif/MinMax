@@ -12,3 +12,6 @@
 
 6 June 2025
 1. 7:02 pm - 9:05 pm - infinite recursion fixed with isterminal (have to remove the total)
+
+13 June 2025
+1. 10:46 am - 12:39 pm - heuristic added and draw bug fixed
