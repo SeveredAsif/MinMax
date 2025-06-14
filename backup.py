@@ -60,6 +60,15 @@ class GameState:
         self.in_menu = True
         self.menu_selection = 0
         self.ai_vs_ai_delay = 1.0  # Delay between AI moves in AI vs AI mode
+        self.heuristics = [
+            ("Simple", heuristic),
+            ("Orb Diff", heuristic_orb_count_diff),
+            ("Edge/Corner", heuristic_edge_corner_control),
+            ("Vulnerability", heuristic_vulnerability),
+            ("Chain Reaction", heuristic_chain_reaction_opportunity),
+        ]
+        self.heuristic_index = 0
+        self.f_heuristic = self.heuristics[self.heuristic_index][1]
 
 game_state = GameState()
 
@@ -107,7 +116,13 @@ def draw_menu(screen):
         start_option = 3
     else:
         start_option = 2
-    
+    # Heuristic Selection
+    heur_text = f"Heuristic: {game_state.heuristics[game_state.heuristic_index][0]}"
+    heur_color = WHITE if game_state.menu_selection == start_option else GRAY
+    heur_surface = font_medium.render(heur_text, True, heur_color)
+    heur_rect = heur_surface.get_rect(center=(WIDTH // 2, menu_y + menu_spacing * (start_option)))
+    screen.blit(heur_surface, heur_rect)
+    start_option += 1
     # Start Game
     start_text = "Start Game"
     start_color = GREEN if game_state.menu_selection == start_option else GRAY
@@ -131,8 +146,7 @@ def draw_menu(screen):
 
 def handle_menu_input(event):
     if event.type == pygame.KEYDOWN:
-        max_options = 4 if game_state.game_mode == HUMAN_VS_AI else 3
-        
+        max_options = 5 if game_state.game_mode == HUMAN_VS_AI else 4
         if event.key == pygame.K_UP:
             game_state.menu_selection = (game_state.menu_selection - 1) % max_options
         elif event.key == pygame.K_DOWN:
@@ -140,7 +154,7 @@ def handle_menu_input(event):
         elif event.key == pygame.K_RETURN:
             if game_state.menu_selection == 0:  # Game Mode
                 game_state.game_mode = AI_VS_AI if game_state.game_mode == HUMAN_VS_AI else HUMAN_VS_AI
-                game_state.menu_selection = 0  # Reset selection when switching modes
+                game_state.menu_selection = 0
             elif game_state.menu_selection == 1:  # Difficulty
                 if game_state.difficulty == EASY:
                     game_state.difficulty = MEDIUM
@@ -151,6 +165,10 @@ def handle_menu_input(event):
             elif game_state.menu_selection == 2 and game_state.game_mode == HUMAN_VS_AI:  # Human Color
                 game_state.human_color = colors.BLUE if game_state.human_color == colors.RED else colors.RED
                 game_state.ai_color = colors.RED if game_state.human_color == colors.BLUE else colors.BLUE
+            elif game_state.menu_selection == (3 if game_state.game_mode == HUMAN_VS_AI else 2):
+                # Heuristic selection
+                game_state.heuristic_index = (game_state.heuristic_index + 1) % len(game_state.heuristics)
+                game_state.f_heuristic = game_state.heuristics[game_state.heuristic_index][1]
             else:  # Start Game
                 game_state.in_menu = False
                 game_state.game_start_time = time.time()
@@ -293,6 +311,12 @@ def draw_sidebar(screen, board, current_player):
     screen.blit(player_text, (GAME_WIDTH + 50, y_offset))
     y_offset += 40
     
+    # Show heuristic name
+    heur_name = game_state.heuristics[game_state.heuristic_index][0]
+    heur_text = font_small.render(f"Heuristic: {heur_name}", True, PURPLE)
+    screen.blit(heur_text, (GAME_WIDTH + 10, y_offset))
+    y_offset += 25
+    
     # Game stats
     stats = [
         f"Move: {game_state.move_count}",
@@ -419,7 +443,7 @@ def get_best_ai_move(board, ai_player, current_player, depth=2):
     opponent_player = colors.BLUE if ai_player == colors.RED else colors.RED
     for move in moves:
         undo_info = make_move_with_undo_information(board, move, ai_player)
-        value = minmax(board, depth, -int(1e9), int(1e9), opponent_player)
+        value = minmax(board, depth, -int(1e9), int(1e9), opponent_player, f_heuristic=game_state.f_heuristic)
         undo_move(board, undo_info)
         
         # Select best move based on AI color
@@ -432,7 +456,7 @@ def get_best_ai_move(board, ai_player, current_player, depth=2):
                 best_value = value
                 best_move = move
     
-    if(best_move==None):
+    if best_move is None:
         return moves[0]
     return best_move
 
