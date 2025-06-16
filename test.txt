@@ -1,0 +1,361 @@
+
+==================================================
+Depth 1 Tests
+==================================================
+
+Red(Simple) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 112
+Time: 4.97s
+
+Red(Simple) vs Blue(Edge/Corner):
+Winner: Blue
+Moves: 102
+Time: 2.61s
+
+Red(Simple) vs Blue(Vulnerability):
+Winner: Red
+Moves: 101
+Time: 2.57s
+
+Red(Simple) vs Blue(Chain Reaction):
+Winner: Blue
+Moves: 102
+Time: 4.69s
+
+Red(Simple) vs Blue(Orb + Chain):
+Winner: Blue
+Moves: 104
+Time: 5.38s
+
+Red(Orb Diff) vs Blue(Simple):
+Winner: Red
+Moves: 101
+Time: 3.45s
+
+Red(Orb Diff) vs Blue(Edge/Corner):
+Winner: Blue
+Moves: 102
+Time: 4.85s
+
+Red(Orb Diff) vs Blue(Vulnerability):
+Winner: Red
+Moves: 97
+Time: 3.74s
+
+Red(Orb Diff) vs Blue(Chain Reaction):
+Winner: Red
+Moves: 97
+Time: 5.68s
+
+Red(Orb Diff) vs Blue(Orb + Chain):
+Winner: Red
+Moves: 97
+Time: 6.03s
+
+Red(Edge/Corner) vs Blue(Simple):
+Winner: Red
+Moves: 97
+Time: 2.30s
+
+Red(Edge/Corner) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 104
+Time: 4.93s
+
+Red(Edge/Corner) vs Blue(Vulnerability):
+Winner: Red
+Moves: 107
+Time: 4.37s
+
+Red(Edge/Corner) vs Blue(Chain Reaction):
+Winner: Red
+Moves: 119
+Time: 5.49s
+
+Red(Edge/Corner) vs Blue(Orb + Chain):
+Winner: Red
+Moves: 119
+Time: 5.79s
+
+Red(Vulnerability) vs Blue(Simple):
+Winner: Blue
+Moves: 104
+Time: 2.61s
+
+Red(Vulnerability) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 94
+Time: 3.17s
+
+Red(Vulnerability) vs Blue(Edge/Corner):
+Winner: Blue
+Moves: 100
+Time: 2.92s
+
+Red(Vulnerability) vs Blue(Chain Reaction):
+Winner: Blue
+Moves: 104
+Time: 5.29s
+
+Red(Vulnerability) vs Blue(Orb + Chain):
+Winner: Blue
+Moves: 100
+Time: 5.40s
+
+Red(Chain Reaction) vs Blue(Simple):
+Winner: Red
+Moves: 113
+Time: 7.77s
+
+Red(Chain Reaction) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 112
+Time: 12.73s
+
+Red(Chain Reaction) vs Blue(Edge/Corner):
+Winner: Red
+Moves: 103
+Time: 6.51s
+
+Red(Chain Reaction) vs Blue(Vulnerability):
+Winner: Red
+Moves: 99
+Time: 6.08s
+
+Red(Chain Reaction) vs Blue(Orb + Chain):
+Winner: Red
+Moves: 111
+Time: 13.21s
+
+Red(Orb + Chain) vs Blue(Simple):
+Winner: Red
+Moves: 101
+Time: 5.93s
+
+Red(Orb + Chain) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 112
+Time: 13.10s
+
+Red(Orb + Chain) vs Blue(Edge/Corner):
+Winner: Red
+Moves: 107
+Time: 7.80s
+
+Red(Orb + Chain) vs Blue(Vulnerability):
+Winner: Red
+Moves: 101
+Time: 6.55s
+
+Red(Orb + Chain) vs Blue(Chain Reaction):
+Winner: Red
+Moves: 111
+Time: 13.48s
+
+Depth 1 Summary:
+
+=== Test Statistics ===
+Total Games: 30
+Red Wins: 17 (56.7%)
+Blue Wins: 13 (43.3%)
+Draws: 0 (0.0%)
+Average Moves per Game: 104.4
+Average Time per Game: 5.98s
+
+Heuristic Performance:
+Orb Diff: 9 wins (30.0%)
+Edge/Corner: 7 wins (23.3%)
+Simple: 2 wins (6.7%)
+Chain Reaction: 6 wins (20.0%)
+Orb + Chain: 6 wins (20.0%)
+
+Color Performance:
+Red: 17 wins (56.7%)
+Blue: 13 wins (43.3%)
+
+==================================================
+Depth 2 Tests
+==================================================
+
+Red(Simple) vs Blue(Orb Diff):
+Winner: Red
+Moves: 97
+Time: 40.86s
+
+Red(Simple) vs Blue(Edge/Corner):
+Winner: Red
+Moves: 97
+Time: 51.75s
+
+Red(Simple) vs Blue(Vulnerability):
+Winner: Red
+Moves: 97
+Time: 71.47s
+
+Red(Simple) vs Blue(Chain Reaction):
+Winner: Blue
+Moves: 98
+Time: 37.61s
+
+Red(Simple) vs Blue(Orb + Chain):
+Winner: Red
+Moves: 101
+Time: 50.89s
+
+Red(Orb Diff) vs Blue(Simple):
+Winner: Blue
+Moves: 100
+Time: 41.04s
+
+Red(Orb Diff) vs Blue(Edge/Corner):
+Winner: Red
+Moves: 95
+Time: 45.38s
+
+Red(Orb Diff) vs Blue(Vulnerability):
+Winner: Red
+Moves: 95
+Time: 44.20s
+
+Red(Orb Diff) vs Blue(Chain Reaction):
+Winner: Red
+Moves: 97
+Time: 49.38s
+
+Red(Orb Diff) vs Blue(Orb + Chain):
+Winner: Blue
+Moves: 98
+Time: 43.25s
+
+Red(Edge/Corner) vs Blue(Simple):
+Winner: Blue
+Moves: 100
+Time: 53.77s
+
+Red(Edge/Corner) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 96
+Time: 34.10s
+
+Red(Edge/Corner) vs Blue(Vulnerability):
+Winner: Red
+Moves: 95
+Time: 55.01s
+
+Red(Edge/Corner) vs Blue(Chain Reaction):
+Winner: Blue
+Moves: 98
+Time: 35.38s
+
+Red(Edge/Corner) vs Blue(Orb + Chain):
+Winner: Blue
+Moves: 100
+Time: 57.27s
+
+Red(Vulnerability) vs Blue(Simple):
+Winner: Blue
+Moves: 100
+Time: 77.78s
+
+Red(Vulnerability) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 96
+Time: 47.27s
+
+Red(Vulnerability) vs Blue(Edge/Corner):
+Winner: Blue
+Moves: 96
+Time: 47.51s
+
+Red(Vulnerability) vs Blue(Chain Reaction):
+Winner: Blue
+Moves: 98
+Time: 38.20s
+
+Red(Vulnerability) vs Blue(Orb + Chain):
+Winner: Blue
+Moves: 96
+Time: 47.91s
+
+Red(Chain Reaction) vs Blue(Simple):
+Winner: Red
+Moves: 101
+Time: 41.84s
+
+Red(Chain Reaction) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 94
+Time: 56.06s
+
+Red(Chain Reaction) vs Blue(Edge/Corner):
+Winner: Blue
+Moves: 96
+Time: 49.09s
+
+Red(Chain Reaction) vs Blue(Vulnerability):
+Winner: Blue
+Moves: 94
+Time: 39.01s
+
+Red(Chain Reaction) vs Blue(Orb + Chain):
+Winner: Blue
+Moves: 98
+Time: 74.57s
+
+Red(Orb + Chain) vs Blue(Simple):
+Winner: Blue
+Moves: 96
+Time: 48.46s
+
+Red(Orb + Chain) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 98
+Time: 54.06s
+
+Red(Orb + Chain) vs Blue(Edge/Corner):
+Winner: Blue
+Moves: 98
+Time: 50.01s
+
+Red(Orb + Chain) vs Blue(Vulnerability):
+Winner: Red
+Moves: 99
+Time: 50.62s
+
+Red(Orb + Chain) vs Blue(Chain Reaction):
+Winner: Red
+Moves: 103
+Time: 53.75s
+
+Depth 2 Summary:
+
+=== Test Statistics ===
+Total Games: 30
+Red Wins: 11 (36.7%)
+Blue Wins: 19 (63.3%)
+Draws: 0 (0.0%)
+Average Moves per Game: 97.6
+Average Time per Game: 49.58s
+
+Heuristic Performance:
+Simple: 8 wins (26.7%)
+Chain Reaction: 4 wins (13.3%)
+Orb Diff: 7 wins (23.3%)
+Orb + Chain: 6 wins (20.0%)
+Edge/Corner: 4 wins (13.3%)
+Vulnerability: 1 wins (3.3%)
+
+Color Performance:
+Red: 11 wins (36.7%)
+Blue: 19 wins (63.3%)
+
+==================================================
+Depth 3 Tests
+==================================================
+
+Red(Simple) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 98
+Time: 798.67s
+

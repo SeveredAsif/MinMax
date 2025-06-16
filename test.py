@@ -1,211 +1,185 @@
-import unittest
-from unittest.mock import patch
+import time
+import itertools
 import Board
 import colors
-from minmax import (result_board, heuristic, valid_moves, 
-                   who_won, is_terminal, minmax)
+from minmax import *
+from utils import *
 
-class TestGameFunctions(unittest.TestCase):
+class TestStats:
+    def __init__(self):
+        self.total_games = 0
+        self.red_wins = 0
+        self.blue_wins = 0
+        self.draws = 0
+        self.moves_sum = 0
+        self.time_sum = 0
+        self.heuristic_wins = {}  # {heuristic_name: wins}
+        self.color_wins = {"Red": 0, "Blue": 0}
+        
+    def add_game_result(self, red_heur_name, blue_heur_name, winner, moves, game_time):
+        self.total_games += 1
+        self.moves_sum += moves
+        self.time_sum += game_time
+        
+        # Track wins by color
+        if winner > 0:  # Red wins
+            self.red_wins += 1
+            self.color_wins["Red"] += 1
+            self.heuristic_wins[red_heur_name] = self.heuristic_wins.get(red_heur_name, 0) + 1
+        elif winner < 0:  # Blue wins
+            self.blue_wins += 1
+            self.color_wins["Blue"] += 1
+            self.heuristic_wins[blue_heur_name] = self.heuristic_wins.get(blue_heur_name, 0) + 1
+        else:
+            self.draws += 1
     
-    def setUp(self):
-        """Initialize a fresh board before each test"""
-        self.board = Board.Board()
+    def get_summary(self):
+        avg_moves = self.moves_sum / self.total_games if self.total_games > 0 else 0
+        avg_time = self.time_sum / self.total_games if self.total_games > 0 else 0
         
-    def test_result_board(self):
-        """Test that making a move creates a new board with the correct change"""
-        # Make initial move on a copy
-        new_board = result_board(self.board, (0, 0), colors.RED)
+        return f"""
+=== Test Statistics ===
+Total Games: {self.total_games}
+Red Wins: {self.red_wins} ({(self.red_wins/self.total_games)*100:.1f}%)
+Blue Wins: {self.blue_wins} ({(self.blue_wins/self.total_games)*100:.1f}%)
+Draws: {self.draws} ({(self.draws/self.total_games)*100:.1f}%)
+Average Moves per Game: {avg_moves:.1f}
+Average Time per Game: {avg_time:.2f}s
+
+Heuristic Performance:
+{self._format_heuristic_stats()}
+
+Color Performance:
+{self._format_color_stats()}
+"""
+
+    def _format_heuristic_stats(self):
+        if not self.heuristic_wins:
+            return "No heuristic data available"
         
-        # Original board should remain unchanged
-        self.assertEqual(self.board.grid[0][0].color, 0)
-        # New board should have the move
-        self.assertEqual(new_board.grid[0][0].color, colors.RED)
+        result = []
+        for heur, wins in self.heuristic_wins.items():
+            win_rate = (wins / self.total_games) * 100
+            result.append(f"{heur}: {wins} wins ({win_rate:.1f}%)")
+        return "\n".join(result)
+    
+    def _format_color_stats(self):
+        if not self.color_wins:
+            return "No color data available"
         
-    def test_heuristic(self):
-        """Test the heuristic evaluation function"""
-        # Empty board should have 0 heuristic
-        self.assertEqual(heuristic(self.board, colors.RED), 0)
+        result = []
+        for color, wins in self.color_wins.items():
+            win_rate = (wins / self.total_games) * 100
+            result.append(f"{color}: {wins} wins ({win_rate:.1f}%)")
+        return "\n".join(result)
+
+def get_best_ai_move(board, ai_player, depth, f_heuristic):
+    """Simplified version of get_best_ai_move for testing"""
+    moves = valid_moves(board, ai_player)
+    if not moves:
+        return None
+    
+    if ai_player == colors.RED:
+        best_value = -int(1e9)
+    else:
+        best_value = int(1e9)
+    
+    best_move = None
+    opponent_player = colors.BLUE if ai_player == colors.RED else colors.RED
+    
+    for move in moves:
+        undo_info = make_move_with_undo_information(board, move, ai_player)
+        value = minmax(board, depth, -int(1e9), int(1e9), opponent_player, f_heuristic)
+        undo_move(board, undo_info)
         
-        # Make some moves
-        self.board.make_move(colors.RED, 0, 0)
-        self.board.make_move(colors.BLUE, 1, 1)
-        
-        # Test heuristic for both players
-        self.assertEqual(heuristic(self.board, colors.RED), 0)  # 1 red - 1 blue = 0
-        self.assertEqual(heuristic(self.board, colors.BLUE), 0)  # -(1 red - 1 blue) = 0
-        
-    def test_valid_moves(self):
-        """Test that valid moves are correctly identified"""
-        # Initial state - all empty cells should be valid
-        moves = valid_moves(self.board, colors.RED)
-        self.assertEqual(len(moves), 54)  # 9x6 grid
-        
-        # After some moves
-        self.board.make_move(colors.RED, 0, 0)
-        self.board.make_move(colors.BLUE, 1, 1)
-        
-        # RED can move to any empty cell or red cell
-        moves = valid_moves(self.board, colors.RED)
-        self.assertEqual(len(moves), 53)  # one less because (1,1) is blue
-        
-        # BLUE can move to any empty cell or blue cell
-        moves = valid_moves(self.board, colors.BLUE)
-        self.assertEqual(len(moves), 53)  # one less because (0,0) is red
-        
-    def test_who_won(self):
-        """Test the terminal state detection"""
-        # Empty board - no winner
-        self.assertEqual(who_won(self.board), 0)
-        
-        # All red board
-        for r in range(9):
-            for c in range(6):
-                self.board.make_move(colors.RED, r, c)
-        self.assertEqual(who_won(self.board), int(1e9))
-        
-        # All blue board
-        self.board = Board.Board()
-        for r in range(9):
-            for c in range(6):
-                self.board.make_move(colors.BLUE, r, c)
-        self.assertEqual(who_won(self.board), -int(1e9))
-        
-        # Mixed board
-        self.board = Board.Board()
-        self.board.make_move(colors.RED, 0, 0)
-        self.board.make_move(colors.BLUE, 1, 1)
-        self.assertEqual(who_won(self.board), 0)
-        
-    def test_is_terminal(self):
-        """Test if terminal state is correctly identified"""
-        # Empty board is not terminal
-        self.assertFalse(is_terminal(self.board))
-        
-        # Board with mixed colors is not terminal
-        self.board.make_move(colors.RED, 0, 0)
-        self.board.make_move(colors.BLUE, 1, 1)
-        self.assertFalse(is_terminal(self.board))
-        
-        # All red board is terminal
-        for r in range(9):
-            for c in range(6):
-                self.board.make_move(colors.RED, r, c)
-        self.assertTrue(is_terminal(self.board))
-        
-        # All blue board is terminal
-        self.board = Board.Board()
-        for r in range(9):
-            for c in range(6):
-                self.board.make_move(colors.BLUE, r, c)
-        self.assertTrue(is_terminal(self.board))
-        
-    def test_minimax_terminal_state(self):
-        """Test minimax with terminal state (RED wins)"""
-        # Create a winning board for RED
-        for r in range(9):
-            for c in range(6):
-                self.board.make_move(colors.RED, r, c)
-                
-        result = minmax(self.board, 3, colors.RED)
-        self.assertEqual(result, int(1e9))
-        
-    def test_minimax_depth_zero(self):
-        """Test minimax with depth 0 (should return heuristic)"""
-        self.board.make_move(colors.RED, 0, 0)
-        self.board.make_move(colors.BLUE, 1, 1)
-        
-        # Mock heuristic to return known value
-        with patch('minmax.heuristic', return_value=42):
-            result = minmax(self.board, 0, colors.RED)
-            self.assertEqual(result, 42)
+        if ai_player == colors.RED:
+            if value > best_value:
+                best_value = value
+                best_move = move
+        else:
+            if value < best_value:
+                best_value = value
+                best_move = move
+    
+    return best_move if best_move else moves[0]
+
+def play_game(red_heuristic, blue_heuristic, depth):
+    """Play a single game with given heuristics and depth"""
+    board = Board.Board()
+    current_player = colors.RED
+    moves_count = 0
+    start_time = time.time()
+    
+    while not board.is_terminal():
+        if current_player == colors.RED:
+            move = get_best_ai_move(board, current_player, depth, red_heuristic)
+            heuristic = red_heuristic
+        else:
+            move = get_best_ai_move(board, current_player, depth, blue_heuristic)
+            heuristic = blue_heuristic
             
-    def test_minimax_maximizing_player(self):
-        """Test minimax with maximizing player (RED)"""
-        self.board.make_move(colors.RED, 0, 0)
-        self.board.make_move(colors.BLUE, 1, 1)
+        if move:
+            logged = [[False for _ in range(6)] for _ in range(9)]
+            memory = [[]]
+            board.make_move(current_player, move[0], move[1], logged, memory)
+            moves_count += 1
+            current_player = colors.BLUE if current_player == colors.RED else colors.RED
+    
+    game_time = time.time() - start_time
+    result = who_won(board)
+    return result, moves_count, game_time
+
+def run_tests():
+    # All available heuristics
+    heuristics = [
+            ("Simple", heuristic),
+            ("Orb Diff", heuristic_orb_count_diff),
+            ("Edge/Corner", heuristic_edge_corner_control),
+            ("Vulnerability", heuristic_vulnerability),
+            ("Chain Reaction", heuristic_chain_reaction_opportunity),
+            ("Orb + Chain",combined_heuristic),
+    ]
+    
+    # Test depths
+    depths = [3]
+    
+    for depth in depths:
+        print(f"\nTesting depth {depth}...")
+        stats = TestStats()
         
-        # Mock valid moves and heuristic returns
-        with patch('minmax.valid_moves', return_value=[(2,2), (3,3)]):
-            with patch('minmax.heuristic', side_effect=[10, -5]):
-                result = minmax(self.board, 1, colors.RED)
-                self.assertEqual(result, 10)  # Should choose max of [10, -5]
+        # Write depth header
+        with open("test2.txt", "a") as f:
+            f.write(f"\n{'='*50}\nDepth {depth} Tests\n{'='*50}\n")
+        
+        # Test all possible heuristic combinations
+        for red_heur, blue_heur in itertools.product(heuristics, repeat=2):
+            if red_heur[0] == blue_heur[0]:  # Skip same heuristic vs itself
+                continue
                 
-    def test_minimax_minimizing_player(self):
-        """Test minimax with minimizing player (BLUE)"""
-        self.board.make_move(colors.RED, 0, 0)
-        self.board.make_move(colors.BLUE, 1, 1)
+            print(f"Testing Red({red_heur[0]}) vs Blue({blue_heur[0]})...")
+            
+            # Play the game
+            result, moves, game_time = play_game(red_heur[1], blue_heur[1], depth)
+            
+            # Record results
+            stats.add_game_result(red_heur[0], blue_heur[0], result, moves, game_time)
+            
+            # Write game results immediately
+            with open("test2.txt", "a") as f:
+                f.write(f"\nRed({red_heur[0]}) vs Blue({blue_heur[0]}):\n")
+                winner = "Red" if result > 0 else "Blue" if result < 0 else "Draw"
+                f.write(f"Winner: {winner}\n")
+                f.write(f"Moves: {moves}\n")
+                f.write(f"Time: {game_time:.2f}s\n")
+                f.flush()  # Ensure it's written to disk
         
-        # Mock valid moves and heuristic returns
-        with patch('minmax.valid_moves', return_value=[(2,2), (3,3)]):
-            with patch('minmax.heuristic', side_effect=[10, -5]):
-                result = minmax(self.board, 1, colors.BLUE)
-                self.assertEqual(result, -5)  # Should choose min of [10, -5]
-                
-    def test_minimax_integration(self):
-        """Integration test with actual moves and small depth"""
-        # Make initial moves to create a simple scenario
-        self.board.make_move(colors.RED, 0, 0)
-        self.board.make_move(colors.BLUE, 0, 1)
-        
-        # Run minimax with depth 2
-        result = minmax(self.board, 2, colors.RED)
-        
-        # We can't predict exact value but should be within reasonable bounds
-        self.assertTrue(abs(result) < int(1e9))
+        # Write depth summary after all games at this depth
+        with open("test.txt", "a") as f:
+            f.write(f"\nDepth {depth} Summary:\n")
+            f.write(stats.get_summary())
+            f.flush()  # Ensure it's written to disk
 
-if __name__ == '__main__':
-    unittest.main()
-# import colors
-# from Board import Board
-# from minmax import minmax, valid_moves, result_board,is_terminal  # adjust import as needed
-
-# def test_minimax_play():
-#     board = Board()
-#     current_player = colors.RED
-#     depth = 2  # low depth for fast testing
-
-#     turn = 1
-#     #while not is_terminal(board):
-#     print(f"\n=== Turn {turn}: {'Red' if current_player == colors.RED else 'Blue'} ===")
-#     #board.print_board()
-
-#     moves = valid_moves(board, current_player)
-#     #print(f"len: {len(moves)}")
-#     # if not moves:
-#     #     print("No valid moves.")
-#     #     break
-
-#     best_value = -int(1e9) if current_player == colors.RED else int(1e9)
-#     best_move = None
-
-#     for move in moves[0:2]:
-#         simulated_board = result_board(board, move, current_player)
-#         #simulated_board.print_board()
-
-#         value = minmax(simulated_board, depth, colors.BLUE if current_player == colors.RED else colors.RED)
-# #         if (current_player == colors.RED and value > best_value) or \
-# #            (current_player == colors.BLUE and value < best_value):
-# #             best_value = value
-# #             best_move = move
-
-# #     if best_move:
-# #         print(f"{'Red' if current_player == colors.RED else 'Blue'} plays at {best_move}")
-# #         board.make_move(current_player, best_move[0], best_move[1])
-# #     else:
-# #         print("No best move found.")
-# #         break
-
-# #     current_player = colors.BLUE if current_player == colors.RED else colors.RED
-# #     turn += 1
-
-# # print("\n=== Final Board ===")
-# # board.print_board()
-# # winner = board.who_won()
-# # if winner == int(1e9):
-# #     print("Red wins!")
-# # elif winner == -int(1e9):
-# #     print("Blue wins!")
-# # else:
-# #     print("Draw.")
-
-# test_minimax_play()
+if __name__ == "__main__":
+    print("Starting AI vs AI heuristic tests...")
+    run_tests()
+    print("Tests completed! Check test.txt for results.")

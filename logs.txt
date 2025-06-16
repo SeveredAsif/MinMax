@@ -15,3 +15,13 @@
 
 13 June 2025
 1. 10:46 am - 12:39 pm - heuristic added and draw bug fixed
+
+16 JUN 2025 
+1. 10:20 am - 1:42 pm - adding diff heuristic ai + logging for report 
+
+def heuristic_vulnerability(state:Board.Board, player):
+    """
+    Returns a higher score for safer positions and penalizes vulnerable orbs.
+    Vulnerable: Orbs that are at (critical_mass-1) and adjacent to enemy orbs.
+    Safe: Orbs that are far from exploding or not adjacent to enemy orbs.
+    """

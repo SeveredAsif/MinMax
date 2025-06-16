@@ -79,22 +79,37 @@ def heuristic_edge_corner_control(state:Board.Board,player):
         return score    
     return -score
 
-def heuristic_vulnerability(state:Board.Board,player):
-    penalty = 0
+def heuristic_vulnerability(state:Board.Board, player):
+
+    score = 0
     for i in range(9):
         for j in range(6):
             cell = state.grid[i][j]
-            if cell.color == player and cell.count >= state.get_critical_mass(i, j) - 1:
-                for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                    ni, nj = i + dx, j + dy
-                    if 0 <= ni < 9 and 0 <= nj < 6:
-                        neighbor = state.grid[ni][nj]
-                        if neighbor.color != 0 and neighbor.color != player:
-                            penalty -= 2
-    if (player==colors.RED):
-        return penalty
-    
-    return -penalty 
+            if cell.color == player:
+                critical = state.get_critical_mass(i, j)
+                
+                if cell.count == critical - 1:
+                    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                        ni, nj = i + dx, j + dy
+                        if 0 <= ni < 9 and 0 <= nj < 6:
+                            neighbor = state.grid[ni][nj]
+                            if neighbor.color != 0 and neighbor.color != player:
+                                score -= 5  
+                
+                else:
+                    safe = True
+                    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                        ni, nj = i + dx, j + dy
+                        if 0 <= ni < 9 and 0 <= nj < 6:
+                            neighbor = state.grid[ni][nj]
+                            if neighbor.color != 0 and neighbor.color != player:
+                                safe = False
+                                break
+                    if safe:
+                        score += 2  # Reward for each safe orb
+    if player == colors.RED:
+        return score
+    return -score
 
 def heuristic_chain_reaction_opportunity(state:Board.Board,player):
     reward = 0
@@ -106,13 +121,31 @@ def heuristic_chain_reaction_opportunity(state:Board.Board,player):
                     ni, nj = i + dx, j + dy
                     if 0 <= ni < 9 and 0 <= nj < 6:
                         neighbor = state.grid[ni][nj]
-                        if neighbor.color != 0 and neighbor.color != player:
+                        if neighbor.color != 0 and neighbor.color == player:
                             if neighbor.count == state.get_critical_mass(ni, nj) - 1:
+                                reward += 5
+                            elif neighbor.count == state.get_critical_mass(ni, nj) - 2:
                                 reward += 3
+
+                
     if (player==colors.RED):
         return reward
     
     return -reward 
+
+
+def combined_heuristic(state: Board.Board, player):
+    orb_score = heuristic_orb_count_diff(state, player)
+    chain_score = heuristic_chain_reaction_opportunity(state, player)
+    
+    
+    final_score = (
+        1.0 * orb_score +       
+        0.7 * chain_score       
+    )
+
+    return final_score
+
 
 
 

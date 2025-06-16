@@ -1,0 +1,49 @@
+
+==================================================
+Depth 3 Tests
+==================================================
+
+Red(Simple) vs Blue(Orb Diff):
+Winner: Blue
+Moves: 98
+Time: 683.88s
+
+Red(Simple) vs Blue(Edge/Corner):
+Winner: Red
+Moves: 105
+Time: 450.86s
+
+Red(Simple) vs Blue(Vulnerability):
+Winner: Red
+Moves: 99
+Time: 543.57s
+
+Red(Simple) vs Blue(Chain Reaction):
+Winner: Blue
+Moves: 100
+Time: 892.85s
+
+Red(Simple) vs Blue(Orb + Chain):
+Winner: Red
+Moves: 103
+Time: 824.14s
+
+Red(Orb Diff) vs Blue(Simple):
+Winner: Red
+Moves: 99
+Time: 407.99s
+
+Red(Orb Diff) vs Blue(Edge/Corner):
+Winner: Red
+Moves: 101
+Time: 630.60s
+
+Red(Orb Diff) vs Blue(Vulnerability):
+Winner: Red
+Moves: 91
+Time: 714.89s
+
+Red(Orb Diff) vs Blue(Chain Reaction):
+Winner: Red
+Moves: 111
+Time: 1607.31s
